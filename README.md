@@ -131,6 +131,12 @@ npm run dev
 docker-compose up --build
 ```
 
+### Method 4: Deploying to Vercel
+1. Root `vercel.json` and root `package.json` are pre-configured to build the Next.js app in `frontend/`.
+2. Connect your GitHub repository to Vercel.
+3. In Vercel Project Settings > General, set **Root Directory** to `frontend` (or leave default root `./` as `vercel.json` automatically delegates the build).
+4. Click **Deploy**.
+
 ---
 
 ## 🚀 Directory Structure
