@@ -1,0 +1,123 @@
+# Implementation Plan - ApexIntel: AI Motorsport Energy & Overtake Intelligence Platform
+
+Scaffold and build an enterprise-grade full-stack web application titled **"ApexIntel: AI Motorsport Energy & Overtake Intelligence Platform"** featuring a scrollytelling 3D race circuit & vehicle trajectory engine, interactive pit-wall dashboard, opponent behavioral profiler, telemetry sandbox, and a FastAPI backend powered by telemetry mining algorithms.
+
+## User Review Required
+
+> [!IMPORTANT]
+> - The application will include both a Next.js (TypeScript/Tailwind CSS/React Three Fiber/Framer Motion) frontend and a Python 3.11 FastAPI backend.
+> - The 3D view is engineered with a custom procedural F1 race car fallback mesh (aerodynamic chassis, front/rear wings, wheels with glow discs, halo safety structure, and ERS energy particle halo) so it runs 100% out-of-the-box without requiring external GLB downloads.
+> - Full live backend integration with real-time fallback to client-side mock data generator if the API is offline during frontend standalone preview.
+
+## Proposed Changes
+
+### Backend (`/backend`)
+
+#### [NEW] [main.py](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/app/main.py)
+FastAPI application initialization, CORS middleware configuration, and router mounting for all API v1 endpoints.
+
+#### [NEW] [schemas.py](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/app/schemas.py)
+Typed Pydantic schemas for Circuit, Sector, PassingZone, TelemetryPoint, StrategyRequest, StrategyResponse, and DriverProfile.
+
+#### [NEW] [mock_data.py](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/app/mock_data.py)
+Generators and static datasets for historical Grand Prix telemetry (Sakhir/Bahrain, Silverstone, Spa-Francorchamps), corner exit lag, battery SoC depletion rates, and driver behavioral classifications (e.g., Max V., Charles L., Fernando A., Lando N.).
+
+#### [NEW] [routers/circuits.py](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/app/routers/circuits.py)
+Endpoints for `GET /api/v1/circuits` and `GET /api/v1/circuits/{circuit_id}`.
+
+#### [NEW] [routers/telemetry.py](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/app/routers/telemetry.py)
+Endpoints for `GET /api/v1/telemetry/historical/{circuit_id}/{driver_id}`.
+
+#### [NEW] [routers/strategy.py](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/app/routers/strategy.py)
+Endpoints for `POST /api/v1/strategy/compute-overtake` computing ERS deployment profiles, overtaking waypoint trajectories, and pass probability.
+
+#### [NEW] [routers/drivers.py](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/app/routers/drivers.py)
+Endpoint `GET /api/v1/drivers` returning driver behavioral archetypes and defensive telemetry traits.
+
+#### [NEW] [requirements.txt](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/requirements.txt)
+Python dependencies (`fastapi`, `uvicorn`, `pydantic`, `numpy`).
+
+#### [NEW] [Dockerfile](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/backend/Dockerfile)
+Container setup for FastAPI runtime on Python 3.11-slim.
+
+---
+
+### Frontend (`/frontend`)
+
+#### [NEW] [package.json](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/package.json)
+Next.js 14 App Router setup with `@react-three/fiber`, `@react-three/drei`, `three`, `framer-motion`, `lucide-react`, `recharts`, `clsx`, `tailwind-merge`, and `gsap`.
+
+#### [NEW] [globals.css](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/app/globals.css)
+F1 high-tech dark theme styling rules (Obsidian `#0B0E14`, Neon Cyan `#00F5FF`, Electric Acid Green `#39FF14`, Alert Red `#FF3B30`), custom glassmorphism styles, animated telemetry scanlines, grid background, and scrollbar styling.
+
+#### [NEW] [types/telemetry.ts](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/types/telemetry.ts)
+Comprehensive TypeScript interfaces for Circuits, Telemetry, Driver profiles, Strategy computation requests/responses, and Scrollytelling stages.
+
+#### [NEW] [lib/splineData.ts](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/lib/splineData.ts)
+3D CatmullRomCurve3 spline path specifications for Bahrain, Silverstone, and Spa 3D tracks, including AI optimal line offsets and opponent defensive line offsets.
+
+#### [NEW] [lib/api.ts](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/lib/api.ts)
+Frontend API client with full error handling and seamless fallback to client-side data generators if backend is unreachable.
+
+#### [NEW] [components/3d/Canvas3D.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/3d/Canvas3D.tsx)
+R3F Canvas container with lighting, shadows, atmospheric fog, and camera controls.
+
+#### [NEW] [components/3d/CircuitRibbon.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/3d/CircuitRibbon.tsx)
+3D procedural track ribbon with curbs, track limits, apex turn flags, distance indicators, and start/finish grid.
+
+#### [NEW] [components/3d/FormulaCar3D.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/3d/FormulaCar3D.tsx)
+Procedural high-tech 3D F1 car model complete with aerodynamic chassis, front/rear wings, sidepods, halo, tires with glowing rim lights, and ERS energy flow particles.
+
+#### [NEW] [components/3d/TrajectorySplines.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/3d/TrajectorySplines.tsx)
+Visualizes AI optimal racing line (glowing cyan/green ribbon) and opponent defensive line (dashed red spline).
+
+#### [NEW] [components/3d/DynamicHUDOverlay.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/3d/DynamicHUDOverlay.tsx)
+Floating 3D HUD tag anchored to the vehicle showing Speed (km/h), Throttle %, Brake %, and Battery SoC (MJ).
+
+#### [NEW] [components/3d/Scrollyteller3D.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/3d/Scrollyteller3D.tsx)
+Manages scroll stage transitions across Lap -3 (Telemetry Match), Lap -2 (Stealth Harvest), Lap -1 (Pressure Feint), and Lap 0 (The Strike).
+
+#### [NEW] [components/dashboard/HeaderNav.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/dashboard/HeaderNav.tsx)
+Top pit-wall navigation bar featuring live telemetry ticker, ERS deployment mode indicator, track select shortcut, and theme indicators.
+
+#### [NEW] [components/dashboard/CircuitExplorer.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/dashboard/CircuitExplorer.tsx)
+Historic circuit & season selector (2022-2025) with Sector Pass Matrix table (Historic pass success %, Energy cost MJ, Rival re-pass risk).
+
+#### [NEW] [components/dashboard/DriverProfiler.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/dashboard/DriverProfiler.tsx)
+Opponent driver behavioral profiler with driver cards (Aggressive Inside-Line Blockers, Early-Deploy Opponents, etc.) and apex speed differential graphs.
+
+#### [NEW] [components/dashboard/ReplaySandbox.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/dashboard/ReplaySandbox.tsx)
+Live Telemetry & Strategy Replay Sandbox with lap timeline slider (Lap -3 to 0), Recharts charts for Battery SoC %, Throttle/Brake deltas, and Overtake Success Probability gauge.
+
+#### [NEW] [components/dashboard/StrategyOptimizer.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/components/dashboard/StrategyOptimizer.tsx)
+Interactive strategy calculation tool connecting directly to the FastAPI `/api/v1/strategy/compute-overtake` endpoint to run real-time overtake simulations.
+
+#### [NEW] [app/page.tsx](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/frontend/src/app/page.tsx)
+Main dashboard assembling the sticky 3D Hero Scrollytelling Viewport and tabbed Pit-Wall Intelligence Panels.
+
+---
+
+### Root Configuration & Containerization
+
+#### [NEW] [docker-compose.yml](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/docker-compose.yml)
+Docker Compose manifest bringing up FastAPI backend (`:8000`) and Next.js frontend (`:3000`).
+
+#### [NEW] [README.md](file:///d:/Downloads/Projects/Track%20SHIFT%20Moto%20Sport/README.md)
+Comprehensive, professional documentation covering system architecture, telemetry concepts, API specifications, setup guide, and usage instructions.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Test FastAPI backend syntax and endpoints via pytest or curl:
+  `python -m pytest` or `curl http://localhost:8000/api/v1/circuits`
+- Next.js build verification:
+  `npm run build` inside `frontend/`
+
+### Manual Verification
+- Verify 3D canvas renders circuit ribbon, procedural 3D car model, glowing AI trajectory spline, and floating telemetry HUD.
+- Test scroll interactions across Lap -3, Lap -2, Lap -1, and Lap 0 stages to confirm smooth camera transitions and telemetry updates.
+- Test Sector Pass Matrix table filtering across Grand Prix circuits (Bahrain, Silverstone, Spa) and seasons (2022-2025).
+- Test Driver Profiler cards and apex speed delta chart interactions.
+- Test live strategy calculator by sending payload to backend `/api/v1/strategy/compute-overtake` and verifying responsive feedback.
