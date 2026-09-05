@@ -247,10 +247,16 @@ def compute_overtake_strategy(req: StrategyRequest) -> StrategyResponse:
     base_prob = 85.0 - (gap * 35.0) + (soc * 0.25) - (aggression * 20.0)
     success_prob = max(12.0, min(96.8, base_prob))
     
-    best_zone = circuit.passing_zones[0]
-    for z in circuit.passing_zones:
-        if z.historic_pass_rate > best_zone.historic_pass_rate:
-            best_zone = z
+    if circuit.passing_zones and len(circuit.passing_zones) > 0:
+        best_zone = circuit.passing_zones[0]
+        for z in circuit.passing_zones:
+            if z.historic_pass_rate > best_zone.historic_pass_rate:
+                best_zone = z
+        corner_start = best_zone.corner_start
+        corner_end = best_zone.corner_end
+    else:
+        corner_start = 1
+        corner_end = 4
             
     energy_budget = round(3.2 + (soc / 100.0) * 1.2, 2)
     time_gain = round(0.42 + (1.0 - gap) * 0.35, 3)
@@ -292,7 +298,7 @@ def compute_overtake_strategy(req: StrategyRequest) -> StrategyResponse:
     risk = "Calculated" if success_prob > 70 else ("Minimal" if success_prob > 85 else "High-Risk")
     
     summary = (
-        f"AI Reinforcement Learning Policy recommends staging at Turn {best_zone.corner_start}. "
+        f"AI Reinforcement Learning Policy recommends staging at Turn {corner_start}. "
         f"Rival driver {driver.name} exhibits {driver.corner_exit_lag_ms:.0f}ms corner-exit lag. "
         f"Deploying {energy_budget} MJ energy budget in Sector {req.target_sector} yields a projected "
         f"{time_gain:.2f}s delta, achieving a {success_prob:.1f}% overtake probability with outside-in corridor trajectory."
@@ -300,8 +306,8 @@ def compute_overtake_strategy(req: StrategyRequest) -> StrategyResponse:
     
     return StrategyResponse(
         circuit_id=req.circuit_id,
-        recommended_passing_sector=best_zone.corner_end,
-        target_corner=best_zone.corner_end,
+        recommended_passing_sector=corner_end,
+        target_corner=corner_end,
         estimated_pass_lap=req.current_lap,
         success_probability_pct=round(success_prob, 1),
         energy_budget_mj=energy_budget,
